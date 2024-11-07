@@ -1,3 +1,12 @@
-*.js linguist-language=MATLAB
-*.css linguist-language=MATLAB
-*.html linguist-language=MATLAB
+!.gitignore
+
+# ignore certain file extensions
+*.ini
+*.asv
+
+# ignore certain folders
+.private*/
+include/
+
+# ignore specific files
+notes.txt
