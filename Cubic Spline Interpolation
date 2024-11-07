@@ -1,0 +1,40 @@
+% Cubic Spline Polynomial Interpolation. Functioning alike interp1(..., 'cubic') embedded in Matlab.
+
+function Y = myCubicSpline(x, y, X)
+    % (x, y) -- Data points 
+    % X -- Interpolation Section
+    % x and X are in ascending order
+
+
+    n = length(x);
+    x_hat = zeros(4*(n-1), 4*(n-1)); 
+    
+    for i = 1:n-1  % Six interpolation constrains
+        x_hat(i,1+4*(i-1):4+4*(i-1)) = x(i).^[3:-1:0];
+        x_hat(i+ n-1,1+4*(i-1):4+4*(i-1)) = x(i+1).^[3:-1:0];
+    end
+    for i = 1:n-2
+        x_hat(i+2*n-2, 1+4*(i-1):8+4*(i-1)) = [x(i+1).^[[2:-1:0],0].*[3,2,1,0], x(i+1).^[[2:-1:0],0].*[-3,-2,-1,0]];
+        x_hat(i+3*n-4, 1+4*(i-1):8+4*(i-1)) = [x(i+1).^[1,0,0,0].*[6,2,0,0], x(i+1).^[1,0,0,0].*[-6,-2,0,0]];
+    end
+    x_hat(4*(n-1)-1, 1:2) = [6*x(1), 2];
+    x_hat(4*(n-1), 4*(n-2)+1 : 4*(n-2)+2) = [6*x(n), 2];
+
+    b = zeros(4*(n-1), 1);
+    b(1:n-1) = y(1:n-1);
+    b(n:2*n-2) = y(2:n);
+
+    cs = x_hat\b;
+
+    Y = zeros(length(X), 1);
+    for i = 1:n-1  % Piecewise interpolation
+         y_piecewise = y(i:i+1);
+         x_piecewise = x(i:i+1).^[3:-1:0];
+         cs_piecewise = cs(1+4*(i-1) : 4+4*(i-1));
+         X_first_idx = find((X >= x(i)) ,1 , 'first');
+         X_last_idx = find((X <= x(i+1)), 1, 'last');
+         X_piecewise = X(X_first_idx:X_last_idx);
+         Y(X_first_idx:X_last_idx) = X_piecewise.^[3:-1:0] * cs_piecewise;
+    end
+
+end
